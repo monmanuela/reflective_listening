@@ -8,11 +8,13 @@ random.seed(10)
 
 
 def concat_start(text):
+    """Concatenate standard reflective listening phrases"""
     starts = ["It sounds like ", "I understand, so ", "I get a sense that ", "It seems like ", "I see, so "]
     return random.choice(starts) + text
 
 
 def flip_pov(text):
+    """Flip the P.O.V from the speaker to the listener (I <-> you)"""
     subject_flip = {
         "I": "you",
         "my": "your",
@@ -35,6 +37,13 @@ def flip_pov(text):
 
 
 class ReflectiveListening:
+    """
+    A class to generate reflective listening statements via paraphrase generation
+
+    For example:
+    Statement: "My teeth can be sensitive at times due to TMJ issues."
+    Reflective listening response: "I understand, so your teeth are sensitive due to temporomandibular disorders."
+    """
     torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     def __init__(self):
@@ -44,6 +53,14 @@ class ReflectiveListening:
             .to(ReflectiveListening.torch_device)
 
     def get_paraphrase(self, input_text):
+        """
+        Obtains paraphrase of a text using the PEGASUS model https://huggingface.co/tuner007/pegasus_paraphrase
+        20 candidate paraphrases are generated using beam search, and scored against the Parametric score. The highest
+        scoring paraphrase is returned.
+
+        :param input_text: Original text to be paraphrased
+        :return: Paraphrase with the highest Parametric score
+        """
         batch = self.pegasus_tokenizer([input_text], truncation=True, padding='longest', max_length=60,
                                        return_tensors="pt").to(ReflectiveListening.torch_device)
         paraphrased = self.pegasus_model.generate(
@@ -61,6 +78,10 @@ class ReflectiveListening:
         return paraphrases[np.argmax(scores)]
 
     def get_response(self, input_text):
+        """
+        Obtains the final response by paraphrasing the input text, then flipping the P.O.V, and concatenating standard
+        reflective listening phrases at the start e.g. "I understand, "
+        """
         paraphrase = self.get_paraphrase(input_text)
         flipped = flip_pov(paraphrase)
         response = concat_start(flipped)

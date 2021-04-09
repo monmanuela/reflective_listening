@@ -6,12 +6,14 @@ from sentence_transformers import SentenceTransformer
 
 
 def num_of_tokens(text):
+    """Counts the number of words in a text"""
     splits = nltk.word_tokenize(text)
     words = [word for word in splits if word.isalpha()]
     return len(words)
 
 
 def containment_measure(original, paraphrase):
+    """Counts the containment measure between 2 texts based on trigram similarity"""
     original = original.replace("\n", " ")
     paraphrase = paraphrase.replace("\n", " ")
 
@@ -48,11 +50,22 @@ def containment_measure(original, paraphrase):
 
 
 class Parametric:
+    """
+    A class to represent the ParaMetric: an evaluation metric for the quality of a paraphrase.
+
+    The metric is a weighted average of 3 components, each corresponding to a notion of what makes a good paraphrase:
+        - 'similarity' score: cosine-similarity of Sentence-BERT embeddings of the original and the paraphrase
+        - 'grammar' score: 1 - ratio of number of grammar errors detected by Language Tool, over the number of tokens
+        - 'structure' score: 1 - containment measure of the original and paraphrase based on trigrams
+
+    The default weights are 0.8, 0.1 and 0.1 for each component respectively, but it can be modified.
+    """
     def __init__(self):
         self.lang_tool = language_tool_python.LanguageTool('en-US')
         self.bert_model = SentenceTransformer('bert-base-nli-mean-tokens')
 
     def grammar_score(self, text):
+        """Measures the grammaticality of a text (higher means more grammatical)"""
         num_of_errors = len(self.lang_tool.check(text))
         num_tokens = num_of_tokens(text)
         if num_tokens == 0:
@@ -60,14 +73,17 @@ class Parametric:
         return 1 - (num_of_errors / num_tokens)
 
     def similarity_score(self, original, paraphrase):
+        """Measures the semantic relatedness of 2 texts (higher means more similar meaning)"""
         vector_original = self.bert_model.encode(original)
         vector_paraphrase = self.bert_model.encode(paraphrase)
         return 1 - spatial.distance.cosine(vector_original, vector_paraphrase)
 
     def structure_score(self, original, paraphrase):
+        """Measures the difference in structure between 2 texts (higher means more differences)"""
         return 1 - containment_measure(original, paraphrase)
 
     def aggregate_score(self, original, paraphrase, embed_wt=0.8, grammar_wt=0.1, structure_wt=0.1):
+        """Weighted average of grammar, similarity and structure score"""
         # Empty string should have a score of 0
         if len(paraphrase) is 0:
             return 0, 0, 0, 0
