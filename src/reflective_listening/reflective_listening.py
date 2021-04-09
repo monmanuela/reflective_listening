@@ -9,7 +9,7 @@ random.seed(10)
 
 def concat_start(text):
     """Concatenate standard reflective listening phrases"""
-    starts = ["It sounds like ", "I understand, so ", "I get a sense that ", "It seems like ", "I see, so "]
+    starts = ["It sounds like ", "I understand, seems like ", "I get a sense that ", "It seems like ", "I see, so "]
     return random.choice(starts) + text
 
 
