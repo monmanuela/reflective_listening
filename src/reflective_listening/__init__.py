@@ -1,2 +1,3 @@
-def hello():
-    return 'Hello world!'
+from .parametric import Parametric
+
+__all__ = ["Parametric"]
