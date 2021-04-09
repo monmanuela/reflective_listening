@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='reflective_listening',
-    version='0.1',
+    version='0.1.1',
     description='Reflective listening statements via paraphrase generation',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -13,6 +13,7 @@ setuptools.setup(
     author='Monika Manuela Hengki',
     author_email='e0014971@u.nus.edu',
     license='MIT',
-    packages=['reflective_listening'],
+    package_dir={"": "src"},
+    packages=setuptools.find_packages(where="src"),
     zip_safe=False
 )
