@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='reflective_listening',
-    version='0.1.2',
+    version='0.1.3',
     description='Reflective listening statements via paraphrase generation',
     long_description=long_description,
     long_description_content_type="text/markdown",
